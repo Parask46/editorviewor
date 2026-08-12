@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orbital Studio - Inspector Tabs & Drag UI</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            studio: {
+              bg: "#0A0A0A", 
+              panel: "#121212", 
+              surface: "#1C1C1C", 
+              surfaceHover: "#2A2A2A", 
+              accent: "#E2FD70",
+              accentHover: "#C4E83D", 
+              muted: "#737373", 
+              text: "#FAFAFA", 
+              border: "#262626", 
+            },
+          },
+          fontFamily: {
+            sans: ["General Sans", "system-ui", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+          },
+          boxShadow: {
+            'glow': '0 0 20px rgba(226, 253, 112, 0.15)',
+          }
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-screen w-screen overflow-hidden flex selection:bg-studio-accent/30 selection:text-white">
+
+  <aside id="left-sidebar" class="w-[300px] shrink-0 h-full bg-studio-panel border-r border-studio-border flex flex-col z-30 transition-all duration-300">
+    <div class="px-6 py-5 flex justify-between items-center border-b border-studio-border bg-studio-bg">
+      <div class="flex items-center gap-3">
+        <div class="w-6 h-6 rounded bg-studio-accent shadow-glow flex items-center justify-center">
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-black"></i>
+        </div>
+        <h2 class="font-bold text-white text-base tracking-tight whitespace-nowrap">
+          Orbital<span class="text-studio-muted font-normal">Design</span>
+        </h2>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-b border-studio-border flex flex-col gap-3">
+      <button id="clear-canvas-btn" class="w-full bg-studio-surface hover:bg-studio-surfaceHover text-red-400 text-sm py-2 rounded-lg flex items-center justify-center gap-2 border border-studio-border transition-colors">
+        <i data-lucide="trash-2" class="w-4 h-4"></i> Clear Canvas
+      </button>
+      
+      <div class="grid grid-cols-2 gap-2">
+        <label for="image-upload-input" class="w-full bg-studio-surface hover:bg-studio-surfaceHover text-studio-text text-xs py-2 rounded-lg flex items-center justify-center gap-2 border border-studio-border transition-colors cursor-pointer">
+          <i data-lucide="image" class="w-3.5 h-3.5 text-studio-accent"></i> Upload IMG
+        </label>
+        <input
+          type="file"
+          id="image-upload-input"
+          accept="image/*"
+          aria-label="Upload image from computer"
+          title="Upload image from computer"
+        />
+
+        <button id="open-html-modal-btn" class="w-full bg-studio-surface hover:bg-studio-surfaceHover text-studio-text text-xs py-2 rounded-lg flex items-center justify-center gap-2 border border-studio-border transition-colors">
+          <i data-lucide="file-code-2" class="w-3.5 h-3.5 text-[#A855F7]"></i> Import HTML
+        </button>
+      </div>
+    </div>
+
+    <div id="library-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+    </div>
+  </aside>
+
+  <main class="flex-1 flex flex-col relative h-full min-w-0 workspace-grid">
+    <header class="top-toolbar z-20">
+      <div class="flex items-center gap-4">
+        <button id="toggle-left-sidebar-btn" class="text-studio-muted hover:text-white p-1.5 rounded bg-studio-surface border border-studio-border transition-colors shadow-sm" title="Toggle Library">
+            <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+        </button>
+        <span class="text-xs text-studio-muted hidden sm:block">
+          Select an element to view the Inspector Tab.
+          <b>Drag elements freely anywhere on the canvas.</b>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button
+          id="open-inspector-toolbar-btn"
+          class="flex items-center gap-2 bg-studio-surface hover:bg-studio-surfaceHover text-studio-text font-medium py-1.5 px-3 rounded text-xs transition-all border border-studio-border"
+        >
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          Inspector
+        </button>
+
+        <select
+          id="export-format"
+          aria-label="Export Format"
+          title="Select Export Format"
+          class="bg-studio-surface border border-studio-border text-xs text-studio-text rounded px-3 py-2 focus:outline-none cursor-pointer"
+        >
+          <option value="html">HTML</option>
+          <option value="react">React (JSX)</option>
+        </select>
+
+        <button
+          id="export-btn"
+          class="bg-studio-accent hover:bg-studio-accentHover text-black font-semibold py-1.5 px-4 rounded text-sm transition-all flex items-center gap-2 shadow-glow"
+        >
+          <i data-lucide="download" class="w-4 h-4"></i> Export
+        </button>
+      </div>
+    </header>
+
+    <div id="canvas-scroll-area" class="flex-1 overflow-hidden relative flex items-center justify-center">
+      <div class="artboard-wrapper">
+        <div id="drop-zone" class="artboard relative pb-24">
+          <div id="canvas-placeholder" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div class="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center mb-6 bg-gray-50/50">
+              <i data-lucide="mouse-pointer-click" class="w-10 h-10 text-gray-400"></i>
+            </div>
+            <p class="font-semibold text-gray-900 text-xl tracking-tight">Freeform Canvas Mode</p>
+            <p class="text-sm mt-2 text-gray-500">Drag items from the left. Place them anywhere freely.</p>
+          </div>
+          
+          <div id="resize-handle"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside id="right-sidebar-wrapper" class="shrink-0 h-full bg-studio-panel border-studio-border flex flex-col transition-all duration-300 relative z-30 collapsed">
+    
+    <div id="properties-toggle-tab" title="Toggle Inspector">
+        <i data-lucide="panel-right-open" class="w-5 h-5"></i>
+    </div>
+
+    <div class="w-[340px] h-full flex flex-col absolute right-0 top-0 border-l border-studio-border bg-studio-panel">
+        
+        <div class="px-6 py-4 flex justify-between items-center border-b border-studio-border bg-studio-bg">
+            <h2 class="font-semibold text-white text-sm tracking-wide flex items-center gap-2">
+                <i data-lucide="settings-2" class="w-4 h-4 text-studio-accent"></i> Inspector
+            </h2>
+            <div class="flex items-center gap-2">
+                <button id="select-parent-btn" class="text-studio-muted hover:text-white p-1 rounded bg-studio-surface border border-studio-border transition-colors" title="Select Parent Container">
+                    <i data-lucide="corner-left-up" class="w-3.5 h-3.5"></i>
+                </button>
+                <button id="close-inspector-btn" class="text-studio-muted hover:text-white p-1 transition-colors" title="Close Inspector">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex border-b border-studio-border bg-studio-bg">
+            <button class="tab-btn active" data-tab="tab-design">Design</button>
+            <button class="tab-btn" data-tab="tab-settings">Settings</button>
+            <button class="tab-btn" data-tab="tab-layers">Layers Tree</button>
+        </div>
+
+        <div id="inspector-content" class="flex-1 overflow-y-auto relative">
+            
+            <div id="inspector-empty-state" class="absolute inset-0 flex items-center justify-center px-6 text-center text-studio-muted text-sm bg-studio-panel z-50">
+               Select an element on the canvas to view its properties.
+            </div>
+
+            <div id="tab-design" class="tab-panel active pb-12">
+                <div class="px-6 py-3 border-b border-studio-border flex items-center justify-between bg-studio-surface/30">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded bg-studio-bg border border-studio-border flex items-center justify-center">
+                            <span id="insp-tag-name" class="text-[10px] font-mono font-bold text-studio-accent uppercase">DIV</span>
+                        </div>
+                    </div>
+                    <button id="delete-el-btn" class="text-red-400 hover:text-red-300 p-1.5 hover:bg-red-400/10 rounded transition-colors" title="Delete Element">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 border-b border-studio-border bg-[#E2FD70]/5">
+                  <span class="prop-label text-studio-accent">Layout Flow</span>
+                  <div class="grid grid-cols-2 gap-3 mt-3">
+                    <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Display</span>
+                      <select id="insp-display" aria-label="CSS Display Property" title="Select Display Option" class="prop-input py-1.5 h-[32px]">
+                        <option value="">Auto</option>
+                        <option value="block">Block</option>
+                        <option value="flex">Flex</option>
+                        <option value="grid">Grid</option>
+                        <option value="inline-block">Inline-Block</option>
+                        <option value="none">None</option>
+                      </select>
+                    </div>
+                    <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Direction</span>
+                      <select id="insp-flexdir" aria-label="Flex Direction Property" title="Select Direction Option" class="prop-input py-1.5 h-[32px]">
+                        <option value="">Auto</option>
+                        <option value="row">Row →</option>
+                        <option value="column">Column ↓</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-6 border-b border-studio-border">
+                  <span class="prop-label text-white">Size</span>
+                  <div class="grid grid-cols-2 gap-4 mt-3">
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Width</span>
+                      <input type="text" id="insp-w" class="prop-input py-1.5" placeholder="auto" />
+                      </div>
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Height</span>
+                      <input type="text" id="insp-h" class="prop-input py-1.5" placeholder="auto" />
+                      </div>
+                  </div>
+                </div>
+
+                <div class="p-6 border-b border-studio-border">
+                  <span class="prop-label text-white">Layering</span>
+                  <div class="grid grid-cols-2 gap-4 mt-3">
+                      <div>
+                        <span class="text-[10px] text-studio-muted mb-1 block">Z-Index (Stacking)</span>
+                        <input type="number" id="insp-z" class="prop-input py-1.5" placeholder="auto" title="Z-Index Value" aria-label="Z-Index Value" />
+                      </div>
+                      <div class="flex gap-2 items-end">
+                        <button id="btn-bring-front" class="bg-studio-surface hover:bg-studio-surfaceHover border border-studio-border text-white text-[10px] py-1.5 px-2 rounded w-full flex justify-center items-center gap-1 transition-colors" title="Bring to Front">
+                           <i data-lucide="arrow-up-to-line" class="w-3.5 h-3.5"></i> Front
+                        </button>
+                        <button id="btn-send-back" class="bg-studio-surface hover:bg-studio-surfaceHover border border-studio-border text-white text-[10px] py-1.5 px-2 rounded w-full flex justify-center items-center gap-1 transition-colors" title="Send to Back">
+                           <i data-lucide="arrow-down-to-line" class="w-3.5 h-3.5"></i> Back
+                        </button>
+                      </div>
+                  </div>
+                </div>
+
+                <div class="p-6 border-b border-studio-border bg-studio-surface/20">
+                  <span class="prop-label text-white">Spacing & Alignment</span>
+                  <div class="grid grid-cols-2 gap-4 mt-3">
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Margin (Outer)</span>
+                      <input type="text" id="insp-m" class="prop-input py-1.5" placeholder="10px auto" />
+                      </div>
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Padding (Inner)</span>
+                      <input type="text" id="insp-p" class="prop-input py-1.5" placeholder="20px" />
+                      </div>
+                      <div class="col-span-2">
+                        <span class="text-[10px] text-studio-muted mb-1 block">Gap (Flex/Grid spacing)</span>
+                        <input type="text" id="insp-gap" class="prop-input py-1.5" placeholder="16px" />
+                      </div>
+                  </div>
+                </div>
+
+                <div id="typograhpy-section" class="p-6 border-b border-studio-border">
+                  <span class="prop-label text-white">Typography</span>
+                  <div class="grid grid-cols-2 gap-4 mt-3">
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Font Size</span>
+                      <input type="text" id="insp-fz" class="prop-input py-1.5" placeholder="16px" />
+                      </div>
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Text Color</span>
+                      <div class="flex items-center gap-2">
+                        <input type="color" id="insp-color-picker" class="color-picker-input cursor-pointer" aria-label="Text Color Picker" title="Text Color Picker" />
+                        <input type="text" id="insp-color" class="prop-input py-1.5 flex-1" placeholder="#000000" />
+                      </div>
+                      </div>
+                  </div>
+                </div>
+
+                <div id="shape-section" class="p-6">
+                  <span class="prop-label text-white">Appearance / Shapes</span>
+                  <div class="grid grid-cols-2 gap-4 mt-3">
+                      <div class="col-span-2">
+                      <span class="text-[10px] text-studio-muted mb-1 block">Background / SVG Fill</span>
+                      <div class="flex items-center gap-2">
+                        <input type="color" id="insp-bg-picker" class="color-picker-input cursor-pointer" aria-label="Background Color Picker" title="Background Color Picker" />
+                        <input type="text" id="insp-bg" class="prop-input py-1.5 flex-1" placeholder="transparent" />
+                      </div>
+                      </div>
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Border / Stroke</span>
+                      <div class="flex items-center gap-2">
+                        <input type="color" id="insp-stroke-picker" class="color-picker-input cursor-pointer" aria-label="Border Color Picker" title="Border Color Picker" />
+                        <input type="text" id="insp-stroke-color" class="prop-input py-1.5 flex-1" placeholder="#000" />
+                      </div>
+                      </div>
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Border Width</span>
+                      <input type="text" id="insp-stroke-width" class="prop-input py-1.5" placeholder="2px" />
+                      </div>
+                      <div>
+                      <span class="text-[10px] text-studio-muted mb-1 block">Border Radius</span>
+                      <input type="text" id="insp-br" class="prop-input py-1.5" placeholder="8px" />
+                      </div>
+
+                      <div id="image-upload-inspector" class="col-span-2 mt-3 hidden">
+                        <span class="text-[10px] text-studio-muted mb-1 block">Image Source</span>
+                        <div class="flex items-center gap-2">
+                          <button
+                            id="insp-image-upload-btn"
+                            type="button"
+                            class="flex-1 bg-studio-accent hover:bg-studio-accentHover text-black font-semibold py-1.5 px-3 rounded text-xs transition-colors flex items-center justify-center gap-2"
+                          >
+                            <i data-lucide="image-up" class="w-3.5 h-3.5"></i>
+                            <span>Upload Image</span>
+                          </button>
+                          <input
+                            type="file"
+                            id="insp-image-upload-input"
+                            accept="image/*"
+                            class="hidden"
+                            aria-label="Upload image for Image Box"
+                            title="Upload image for Image Box"
+                          />
+                        </div>
+                        <p class="text-[10px] text-studio-muted mt-1">
+                          Works when an <span class="font-mono text-studio-accent">Image Box</span> is selected.
+                        </p>
+                      </div>
+                  </div>
+                </div>
+            </div>
+
+            <div id="tab-settings" class="tab-panel pb-12">
+                <div class="p-6 border-b border-studio-border">
+                    <span class="prop-label text-white">Text / Raw HTML</span>
+                    <p class="text-[10px] text-studio-muted mb-3 leading-relaxed">Edit the inner contents of this element. You can also double click text on the canvas to type directly.</p>
+                    <textarea id="insp-content" class="prop-input h-32 font-mono text-[11px] resize-none" placeholder="Inner HTML Content"></textarea>
+                </div>
+                
+                <div class="p-6">
+                    <span class="prop-label text-white">Advanced CSS Classes</span>
+                    <p class="text-[10px] text-studio-muted mb-3 leading-relaxed">Add any Tailwind utility classes here to override styles (e.g. <span class="text-studio-accent font-mono">shadow-xl hover:bg-blue-500</span>).</p>
+                    <textarea id="insp-classes" class="prop-input h-20 resize-none font-mono text-[11px]" placeholder="flex items-center gap-4..."></textarea>
+                </div>
+            </div>
+
+            <div id="tab-layers" class="tab-panel pb-12 h-full">
+                <div class="px-6 py-4 border-b border-studio-border bg-studio-surface/20">
+                    <p class="text-xs text-studio-muted">View and select nested elements inside the canvas.</p>
+                </div>
+                <div id="dom-tree-container" class="p-4">
+                    <div class="text-xs text-studio-muted italic text-center mt-4">Canvas is empty</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+  </aside>
+
+  <div id="html-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-white font-semibold text-lg flex items-center gap-2">
+            <i data-lucide="file-code-2" class="w-5 h-5 text-[#A855F7]"></i> Import HTML Structure
+        </h3>
+        <button id="close-modal-btn" class="text-studio-muted hover:text-white" title="Close Modal"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      
+      <textarea id="raw-html-input" class="prop-input h-48 mb-4 font-mono text-xs resize-none" placeholder='<div class="bg-gray-100 p-8 rounded-lg">&#10;  <h1>My Cool Title</h1>&#10;  <p>Some description text that I can edit.</p>&#10;  <button class="bg-blue-500 text-white p-2">Submit</button>&#10;</div>'></textarea>
+      
+      <div class="flex items-center gap-3">
+        <button id="insert-html-btn" class="flex-1 bg-studio-accent hover:bg-studio-accentHover text-black font-semibold py-2 rounded-lg transition-colors">
+          Insert to Canvas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
