@@ -64,22 +64,9 @@
         <i data-lucide="trash-2" class="w-4 h-4"></i> Clear Canvas
       </button>
       
-      <div class="grid grid-cols-2 gap-2">
-        <label for="image-upload-input" class="w-full bg-studio-surface hover:bg-studio-surfaceHover text-studio-text text-xs py-2 rounded-lg flex items-center justify-center gap-2 border border-studio-border transition-colors cursor-pointer">
-          <i data-lucide="image" class="w-3.5 h-3.5 text-studio-accent"></i> Upload IMG
-        </label>
-        <input
-          type="file"
-          id="image-upload-input"
-          accept="image/*"
-          aria-label="Upload image from computer"
-          title="Upload image from computer"
-        />
-
-        <button id="open-html-modal-btn" class="w-full bg-studio-surface hover:bg-studio-surfaceHover text-studio-text text-xs py-2 rounded-lg flex items-center justify-center gap-2 border border-studio-border transition-colors">
-          <i data-lucide="file-code-2" class="w-3.5 h-3.5 text-[#A855F7]"></i> Import HTML
-        </button>
-      </div>
+      <button id="open-html-modal-btn" class="w-full bg-studio-surface hover:bg-studio-surfaceHover text-studio-text text-xs py-2 rounded-lg flex items-center justify-center gap-2 border border-studio-border transition-colors">
+        <i data-lucide="file-code-2" class="w-3.5 h-3.5 text-[#A855F7]"></i> Import HTML
+      </button>
     </div>
 
     <div id="library-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
@@ -92,6 +79,16 @@
         <button id="toggle-left-sidebar-btn" class="text-studio-muted hover:text-white p-1.5 rounded bg-studio-surface border border-studio-border transition-colors shadow-sm" title="Toggle Library">
             <i data-lucide="panel-left-close" class="w-4 h-4"></i>
         </button>
+
+        <div class="flex items-center gap-1 border-l border-r border-studio-border px-4 mx-1 hidden sm:flex">
+            <button id="undo-btn" class="text-studio-muted hover:text-white p-1.5 rounded hover:bg-studio-surfaceHover transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Undo (Ctrl+Z)" disabled>
+                <i data-lucide="undo-2" class="w-4 h-4"></i>
+            </button>
+            <button id="redo-btn" class="text-studio-muted hover:text-white p-1.5 rounded hover:bg-studio-surfaceHover transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Redo (Ctrl+Y)" disabled>
+                <i data-lucide="redo-2" class="w-4 h-4"></i>
+            </button>
+        </div>
+
         <span class="text-xs text-studio-muted hidden sm:block">
           Select an element to view the Inspector Tab.
           <b>Drag elements freely anywhere on the canvas.</b>
@@ -137,7 +134,7 @@
             <p class="text-sm mt-2 text-gray-500">Drag items from the left. Place them anywhere freely.</p>
           </div>
           
-          <div id="resize-handle"></div>
+          <div id="resize-handle" style="display: none;"></div>
         </div>
       </div>
     </div>
@@ -381,6 +378,10 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="globals.js"></script>
+  <script src="ui.js"></script>
+  <script src="library.js"></script>
+  <script src="inspector.js"></script>
+  <script src="engine.js"></script>
 </body>
 </html>
