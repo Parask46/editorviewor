@@ -378,10 +378,22 @@
     </div>
   </div>
 
+  <div id="custom-context-menu" class="hidden fixed z-[9999] bg-studio-panel border border-studio-border rounded-lg shadow-2xl py-1 w-48 text-xs text-studio-text font-sans">
+    <button id="ctx-undo" class="w-full text-left px-4 py-2 hover:bg-studio-surface transition-colors flex items-center gap-2"><i data-lucide="undo-2" class="w-4 h-4"></i> Undo</button>
+    <button id="ctx-redo" class="w-full text-left px-4 py-2 hover:bg-studio-surface transition-colors flex items-center gap-2"><i data-lucide="redo-2" class="w-4 h-4"></i> Redo</button>
+    <div class="h-px bg-studio-border my-1"></div>
+    <button id="ctx-copy" class="w-full text-left px-4 py-2 hover:bg-studio-surface transition-colors flex items-center gap-2"><i data-lucide="copy" class="w-4 h-4"></i> Copy Element</button>
+    <button id="ctx-inspector" class="w-full text-left px-4 py-2 hover:bg-studio-surface transition-colors flex items-center gap-2"><i data-lucide="sliders" class="w-4 h-4"></i> Inspector</button>
+    <div class="h-px bg-studio-border my-1"></div>
+    <button id="ctx-save" class="w-full text-left px-4 py-2 hover:bg-studio-surface transition-colors flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Save As HTML</button>
+    <button id="ctx-delete" class="w-full text-left px-4 py-2 hover:bg-studio-surface text-red-400 transition-colors flex items-center gap-2"><i data-lucide="trash-2" class="w-4 h-4"></i> Delete</button>
+  </div>
+
   <script src="globals.js"></script>
   <script src="ui.js"></script>
   <script src="library.js"></script>
   <script src="inspector.js"></script>
   <script src="engine.js"></script>
+  <script src="contextmenu.js"></script>
 </body>
 </html>
