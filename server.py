@@ -3,7 +3,7 @@ import webview
 
 def main():
     # Target directory containing index.html
-    project_dir = r"C:\editorviewor"
+    project_dir = os.path.dirname(os.path.abspath(__file__))
     index_file = os.path.join(project_dir, "index.html")
 
     # Ensure the file exists before launching

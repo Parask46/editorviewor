@@ -197,7 +197,20 @@ body {
 .modal-overlay.active { display: flex; }
 .modal-content { background: #121212; border: 1px solid #262626; border-radius: 12px; width: 100%; max-width: 500px; padding: 24px; box-shadow: 0 24px 48px rgba(0,0,0,0.8); }
 
-/* --- RESIZE HANDLE STYLES --- */
+/* --- RESIZE LAYER (8-way handles) --- */
+#resize-layer {
+    display: none;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 60;
+}
+#resize-layer .resize-handle {
+    pointer-events: auto;
+}
+#resize-layer .resize-handle:hover { background: #ffffff; transform: scale(1.15); }
+
+/* Legacy single handle kept for backwards compat */
 #resize-handle {
     display: none;
     position: absolute;
